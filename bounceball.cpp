@@ -12,11 +12,13 @@ using namespace std;
 
 const int maxCol = 120;  // screen or window dimension as shown in windows properties
 const int maxRow = 30;
+ int life = 5, score = 0;
 
 struct catcherstruct {
    int col;
    int row;
    int length;
+
 };
 
 void initBall(ballstruct &B, int initRowPos, int initColPos, bool initDirDown, bool initDirRight, int delay);
@@ -31,7 +33,7 @@ int main() {
    ballstruct curBall;
    catcherstruct myCatcher;
 
-   int life = 5, score = 0;
+
 
    clearScreen();
    gotoxy(0,29); cout << "Life: " << life;
@@ -44,7 +46,7 @@ int main() {
    createCatcher(myCatcher,28,(maxCol-20)/2,20); // length of the catcher here is 20
    showCatcher(myCatcher);
 
-   initBall(curBall,0,0,true,true,1500);  // 5000 as slowest is alright for my computer, 1500 is fastest
+   initBall(curBall,0,0,true,true,5000);  // 5000 as slowest is alright for my computer, 1500 is fastest
 
    // Ball Movement Scheduler
    while (FOREVER) {
@@ -127,6 +129,10 @@ void processBall(ballstruct &B) {
           if (B.curRow == maxRow-2) {  // Vertical Direction Component: if maxRow is 30, bounce at row 28
              B.curRow--;
              B.curDirDown = false;
+             life--;
+              gotoxy(0,29); cout << "Life: " << life;
+                gotoxy(50,29); cout << "Score: " << score;
+
           }
           else
              B.curRow++;  // keep going down
