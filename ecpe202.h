@@ -1,4 +1,4 @@
-#include<dos.h>
+#include "dos.h"
 #include<windows.h>
 #define MAXSTACK 100
 #define FOREVER TRUE
