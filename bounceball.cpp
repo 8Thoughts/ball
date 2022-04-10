@@ -10,6 +10,8 @@
 
 using namespace std;
 
+const char DOWN = 'd', UP = 'u', LEFT = 'l', RIGHT = 'r';
+
 const int maxCol = 120; // screen or window dimension as shown in windows properties
 const int maxRow = 30;
 const int catcherLength = 20;
@@ -20,10 +22,11 @@ struct catcherstruct
    int col;
    int row;
    int length;
+   int currentColumn;
 };
 
 void initBall(ballstruct &B, int initRowPos, int initColPos, bool initDirDown, bool initDirRight, int delay);
-void processBall(ballstruct &B);
+void processBall(ballstruct &B, catcherstruct &C);
 void processCatcher(catcherstruct &C, char ch);
 void createCatcher(catcherstruct &C, int row, int col, int length);
 void showCatcher(catcherstruct &C);
@@ -34,14 +37,13 @@ int main()
 
    ballstruct curBall;
    catcherstruct myCatcher;
-
    clearScreen();
    gotoxy(0, 29);
    cout << "Life: " << life;
    gotoxy(50, 29);
    cout << "Score: " << score;
 
-   //createBQ(ballQ);
+   // createBQ(ballQ);
 
    // initialize ball and add to the Ball Queue
 
@@ -80,7 +82,7 @@ int main()
       // Retrieve ball from Ball Queue
 
       // Process ball (retrieved from Ball Queue) for bouncing schedule
-      processBall(curBall);
+      processBall(curBall, myCatcher);
 
       // Add ball back to Ball Queue
    }
@@ -96,93 +98,72 @@ void initBall(ballstruct &B, int initRowPos, int initColPos, bool initDirDown, b
    B.curDirRight = initDirRight;
    B.delay = delay;
    B.curDelayCount = 0;
+   B.directionX = LEFT;
+   B.directionY = DOWN;
 }
 
-void processBall(ballstruct &B)
+void processBall(ballstruct &B, catcherstruct &C)
 {
    B.curDelayCount++;
    if (B.curDelayCount >= B.delay)
    {                              // next move
       gotoxy(B.curCol, B.curRow); // clear ball
       cout << " ";
-      if ((B.curDirDown == false) && (B.curDirRight == true))
-      {
-         if (B.curRow == 0)
-         { // Vertical Direction Component: bounce at row 0
-            B.curRow++;
-            B.curDirDown = true;
-         }
-         else
-            B.curRow--; // keep going up
-         if (B.curCol == maxCol - 1)
-         { // Horizontal Direction Component: if maxCow is 120, bounce at col 119 because col starts at 0
-            B.curCol--;
-            B.curDirRight = false;
-         }
-         else
-            B.curCol++; // keep going rightward
-      }
-      else if ((B.curDirDown == false) && (B.curDirRight == false))
-      {
-         if (B.curRow == 0)
-         { // Vertical Direction Component: bounce at row 0
-            B.curRow++;
-            B.curDirDown = true;
-         }
-         else
-            B.curRow--; // keep going up
-         if (B.curCol == 0)
-         { // Horizontal Direction Component: bounce at col 0
-            B.curCol++;
-            B.curDirRight = true;
-         }
-         else
-            B.curCol--; // keep going leftward
-      }
-      else if ((B.curDirDown == true) && (B.curDirRight == true))
-      {
-         if (B.curRow == maxRow - 2)
-         { // Vertical Direction Component: if maxRow is 30, bounce at row 28
-            B.curRow--;
-            B.curDirDown = false;
-            life--;
-            gotoxy(0, 29);
-            cout << "Life: " << life;
-            gotoxy(50, 29);
-            cout << "Score: " << score;
-         }
-         else
-            B.curRow++; // keep going down
-         if (B.curCol == maxCol - 1)
-         { // Horizontal Direction Component: if maxCow is 120, bounce at col 119 because col starts at 0
-            B.curCol--;
-            B.curDirRight = false;
-         }
-         else
-            B.curCol++; // keep going rightward
-      }
-      else if ((B.curDirDown == true) && (B.curDirRight == false))
-      {
-         if (B.curRow == maxRow - 2)
-         { // Vertical Direction Component: if maxRow is 30, bounce at row 28
-            B.curRow--;
-            B.curDirDown = false;
-         }
-         else
-            B.curRow++; // keep going down
-         if (B.curCol == 0)
-         { // Horizontal Direction Component: bounce at col 0
-            B.curCol++;
-            B.curDirRight = true;
-         }
-         else
-            B.curCol--; // keep going leftward
-      }
+
+      /**
+       * @brief We determine the direction of the ball.
+       */
+      if (B.curRow == maxRow - 2) /**
+                                   * @brief We switch the
+                                   * Ball desired direction vertically (B.directionY) to up or 'u'
+                                   * since we have hit the bottom row 29
+                                   */
+         B.directionY = UP;
+
+      if (B.curRow == 0) /**
+                          * @brief We switch desired ball direction vertically
+                          * to down 'd'
+                          * if we hit the top
+                          */
+         B.directionY = DOWN;
+
+      if (B.curCol == 0) /**
+                          * @brief We switch the
+                          * Ball desired direction horizontally (B.directionX) to RIGHT or 'r'
+                          * since we have hit the left edge of the screen
+                          */
+         B.directionX = 'r';
+
+      if (B.curCol == maxCol) /**
+                               * @brief We switch the
+                               * Ball desired direction horizontally (B.directionX) to LEFT or 'l'
+                               * since we have hit the maximum game world space horizontall
+                               */
+         B.directionX = 'l';
+
+      /**
+       * @brief
+       * These next line will process the SCORE-LIFE mechanism.
+       */
+      if (B.curRow == maxRow - 2)
+         B.curCol >= C.col &&B.curCol <= C.col + catcherLength ? score++ : life--;
+
+      // Will determine the next move of the ball based on direction
+      B.directionY == DOWN ? B.curRow++ : B.curRow--;
+      B.directionX == RIGHT ? B.curCol++ : B.curCol--;
+
       gotoxy(B.curCol, B.curRow); // show the ball in new position now
-      cout << "0";
-      gotoxy(0, 0); // move the cursor away from the ball
+      cout << "O";
+      // move the cursor away from the ball
 
       B.curDelayCount = 0; // reset Delay Counter after the ball has moved
+      gotoxy(0, 29);
+
+      // Update the score/life stats
+      cout << "Life: " << life;
+      gotoxy(50, 29);
+      cout << "Score: " << score;
+      gotoxy(0, 0);
    }
 }
 

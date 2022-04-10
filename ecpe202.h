@@ -11,6 +11,7 @@ struct ballstruct {
     int delay; // speed
     int curDelayCount;
     bool curDirDown, curDirRight;
+    char directionX, directionY;
 };
 
 void gotoxy(int x, int y){
